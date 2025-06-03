@@ -1,6 +1,6 @@
 @{
     ModuleVersion = '1.0.0'
-    GUID = a01175dd-905d-46a6-ab33-00ca9fc4d3e8
+    GUID = "a01175dd-905d-46a6-ab33-00ca9fc4d3e8"
     Author = 'TheLastHorcrux'
     CompanyName = 'Hogwarts'
     Copyright = '(c) 2025 [Naveed Khan]. All rights reserved.'
