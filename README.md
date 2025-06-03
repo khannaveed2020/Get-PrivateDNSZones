@@ -17,17 +17,34 @@ Install-Module -Name Get-PrivateDNSZones -Scope CurrentUser
 
 ## Usage
 
-1. First, ensure you're connected to Azure:
+1. First, connect to Azure:
 
 ```powershell
 Connect-AzAccount
 ```
 
-2. Use the module to get private DNS zones linked to a VNet:
+2. List available Virtual Networks to get the VNet name and Resource Group:
 
 ```powershell
-$vnetResourceId = "/subscriptions/your-subscription-id/resourceGroups/your-rg/providers/Microsoft.Network/virtualNetworks/your-vnet"
-Get-PrivateDNSZones -VNetResourceId $vnetResourceId
+Get-AzVirtualNetwork | select name, ResourceGroupName
+```
+
+3. Get the Virtual Network object:
+
+```powershell
+$VNet = Get-AzVirtualNetwork -Name "<VNet_Name>" -ResourceGroupName "<RG_Name>"
+```
+
+4. Get all private DNS zones linked to the VNet:
+
+```powershell
+Get-PrivateDNSZoneDetails -VNetResourceId $VNet.ID
+```
+
+5. To look up a specific FQDN in the private DNS zones:
+
+```powershell
+Get-PrivateDNSZoneDetails -VNetResourceId $VNet.ID -FQDN "<FQDN_For_Lookup_in_PrivateDNS_Zone>"
 ```
 
 ## Output
@@ -38,13 +55,30 @@ The cmdlet returns an array of objects with the following properties:
 - ZoneId: Resource ID of the DNS zone
 - LinkName: Name of the VNet link
 - LinkId: Resource ID of the VNet link
+- MatchingFQDN: The FQDN that was found (when using -FQDN parameter)
+- ARecord: The IP address associated with the FQDN (when using -FQDN parameter)
+- TTL: Time-to-live value for the DNS record (when using -FQDN parameter)
+- AvailableRecords: List of all A records in the zone (when FQDN is not found)
 
 ## Example
 
 ```powershell
-$vnetResourceId = "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/my-rg/providers/Microsoft.Network/virtualNetworks/my-vnet"
-$linkedZones = Get-PrivateDNSZones -VNetResourceId $vnetResourceId
+# Connect to Azure
+Connect-AzAccount
+
+# List VNets
+Get-AzVirtualNetwork | select name, ResourceGroupName
+
+# Get specific VNet
+$VNet = Get-AzVirtualNetwork -Name "my-vnet" -ResourceGroupName "my-rg"
+
+# Get all linked private DNS zones
+$linkedZones = Get-PrivateDNSZoneDetails -VNetResourceId $VNet.ID
 $linkedZones | Format-Table -AutoSize
+
+# Look up specific FQDN
+$dnsDetails = Get-PrivateDNSZoneDetails -VNetResourceId $VNet.ID -FQDN "app1.privatelink.blob.core.windows.net"
+$dnsDetails | Format-Table -AutoSize
 ```
 
 ## Contributing
